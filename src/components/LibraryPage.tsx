@@ -201,11 +201,7 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
                     {doc.content}
                   </p>
                   
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      {doc.creator}
-                    </div>
+                  <div className="flex items-center justify-end text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {doc.updateTime}
