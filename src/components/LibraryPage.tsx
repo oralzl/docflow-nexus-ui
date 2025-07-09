@@ -149,12 +149,6 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
                         <h3 className="font-medium text-foreground group-hover:text-primary transition-colors duration-normal line-clamp-2">
                           {doc.title}
                         </h3>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge className={getTypeColor(doc.type)}>
-                            {getTypeName(doc.type)}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{doc.size}</span>
-                        </div>
                       </div>
                     </div>
                     
