@@ -28,6 +28,7 @@ interface LocalDocument {
   createTime: string;
   updateTime: string;
   size: string;
+  url?: string;
   tags?: string[];
 }
 
@@ -55,7 +56,7 @@ const Index = () => {
   const [localDocuments, setLocalDocuments] = useState<LocalDocument[]>([]);
   const { toast } = useToast();
 
-  // Mock local documents
+  // Mock local documents with url field
   useEffect(() => {
     const mockDocs: LocalDocument[] = [
       {
@@ -67,6 +68,7 @@ const Index = () => {
         createTime: "2024-01-15",
         updateTime: "2024-01-20",
         size: "2.3 MB",
+        url: "https://example.com/doc1",
         tags: ["需求", "设计", "v2.1"]
       },
       {
@@ -78,6 +80,7 @@ const Index = () => {
         createTime: "2024-01-18",
         updateTime: "2024-01-22",
         size: "1.8 MB",
+        url: "https://example.com/wiki1",
         tags: ["API", "接口", "文档"]
       },
       {
@@ -89,6 +92,7 @@ const Index = () => {
         createTime: "2024-01-10",
         updateTime: "2024-01-25",
         size: "856 KB",
+        url: "https://example.com/sheet1",
         tags: ["数据", "统计", "用户"]
       }
     ];
@@ -176,14 +180,28 @@ const Index = () => {
     setIsPreviewOpen(true);
   };
 
-  // Handle document preview for local documents
-  const handleLibraryPreview = (doc: LocalDocument) => {
-    const docWithOptionalFields: Document = {
-      ...doc,
-      url: undefined
-    };
-    setSelectedDocument(docWithOptionalFields);
-    setIsPreviewOpen(true);
+  // Handle document export for preview modal
+  const handleExport = (doc: Document | LocalDocument) => {
+    toast({
+      title: "导出成功",
+      description: `文档"${doc.title}"已导出。`,
+    });
+  };
+
+  // Handle document update
+  const handleUpdate = async (docId: string) => {
+    toast({
+      title: "更新中...",
+      description: "正在从飞书同步最新版本。",
+    });
+    
+    // Simulate update API call
+    setTimeout(() => {
+      toast({
+        title: "更新成功",
+        description: "文档已更新到最新版本。",
+      });
+    }, 2000);
   };
 
   // Handle document deletion
@@ -192,15 +210,6 @@ const Index = () => {
     toast({
       title: "文档已删除",
       description: "文档已从本地文档库中移除。",
-    });
-  };
-
-  // Handle document export
-  const handleExport = (doc: Document | LocalDocument) => {
-    // Simulate export functionality
-    toast({
-      title: "导出成功",
-      description: `文档"${doc.title}"已导出。`,
     });
   };
 
@@ -232,9 +241,8 @@ const Index = () => {
         ) : (
           <LibraryPage
             documents={localDocuments}
-            onPreview={handleLibraryPreview}
             onDelete={handleDelete}
-            onExport={handleExport}
+            onUpdate={handleUpdate}
           />
         )}
       </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { FileText, Trash2, Eye, Calendar, User, Download, Search } from "lucide-react";
+import { FileText, Trash2, Eye, Calendar, User, RefreshCw, ExternalLink, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,17 +16,18 @@ interface LocalDocument {
   createTime: string;
   updateTime: string;
   size: string;
+  url?: string;
   tags?: string[];
 }
 
 interface LibraryPageProps {
   documents: LocalDocument[];
-  onPreview: (doc: LocalDocument) => void;
   onDelete: (docId: string) => void;
-  onExport: (doc: LocalDocument) => void;
+  onUpdate: (docId: string) => void;
 }
 
-export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: LibraryPageProps) => {
+export const LibraryPage = ({ documents, onDelete, onUpdate }: LibraryPageProps) => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -124,7 +126,7 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
                   {searchQuery ? '没有找到匹配的文档' : '文档库为空'}
                 </h3>
                 <p className="text-muted-foreground">
-                  {searchQuery ? '尝试使用不同的关键词搜索' : '开始搜索在线文档并保存到本地文档库'}
+                  {searchQuery ? '尝试使用不同的关键词搜索' : '开始搜索知识库文档并保存到本地文档库'}
                 </p>
               </div>
             </CardContent>
@@ -139,7 +141,7 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
               <Card 
                 key={doc.id} 
                 className="shadow-soft hover:shadow-medium transition-all duration-normal group cursor-pointer"
-                onClick={() => onPreview(doc)}
+                onClick={() => navigate(`/document/${doc.id}`)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -158,9 +160,10 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onPreview(doc);
+                          navigate(`/document/${doc.id}`);
                         }}
                         className="h-8 w-8 p-0"
+                        title="预览文档"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -169,12 +172,27 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onExport(doc);
+                          onUpdate(doc.id);
                         }}
                         className="h-8 w-8 p-0"
+                        title="更新文档"
                       >
-                        <Download className="w-4 h-4" />
+                        <RefreshCw className="w-4 h-4" />
                       </Button>
+                      {doc.url && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(doc.url, '_blank');
+                          }}
+                          className="h-8 w-8 p-0"
+                          title="打开原文档"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -183,6 +201,7 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
                           onDelete(doc.id);
                         }}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        title="删除文档"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
