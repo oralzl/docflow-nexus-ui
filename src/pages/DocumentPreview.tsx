@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, RefreshCw, ExternalLink, Trash2, Calendar, User } from "lucide-react";
+import { ArrowLeft, RefreshCw, ExternalLink, Trash2, Calendar, Copy, FileText, Code, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,7 @@ const DocumentPreview = () => {
   const [document, setDocument] = useState<Document | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [viewMode, setViewMode] = useState<'rich' | 'markdown' | 'plain'>('rich');
 
   // Mock data - 在实际应用中这里会从API获取数据
   useEffect(() => {
@@ -103,6 +104,35 @@ const DocumentPreview = () => {
   const handleOpenOriginal = () => {
     if (document?.url) {
       window.open(document.url, '_blank');
+    }
+  };
+
+  const handleCopyContent = async () => {
+    if (!document) return;
+    
+    let contentToCopy = '';
+    switch (viewMode) {
+      case 'rich':
+      case 'plain':
+        contentToCopy = document.content;
+        break;
+      case 'markdown':
+        contentToCopy = document.content; // 假设原始内容就是markdown格式
+        break;
+    }
+    
+    try {
+      await navigator.clipboard.writeText(contentToCopy);
+      toast({
+        title: "复制成功",
+        description: "文档内容已复制到剪贴板。",
+      });
+    } catch (err) {
+      toast({
+        title: "复制失败",
+        description: "无法复制到剪贴板，请手动选择复制。",
+        variant: "destructive",
+      });
     }
   };
 
@@ -196,6 +226,15 @@ const DocumentPreview = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={handleCopyContent}
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                复制内容
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleDelete}
                 className="text-destructive hover:text-destructive"
               >
@@ -213,31 +252,82 @@ const DocumentPreview = () => {
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium">文档内容</h2>
-              <div className="text-sm text-muted-foreground">
-                创建于 {document.createTime}
+              <div className="flex items-center gap-2">
+                <div className="flex bg-muted rounded-lg p-1">
+                  <Button
+                    variant={viewMode === 'rich' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('rich')}
+                    className="h-8 px-3"
+                  >
+                    <FileText className="w-4 h-4 mr-1" />
+                    富文本
+                  </Button>
+                  <Button
+                    variant={viewMode === 'markdown' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('markdown')}
+                    className="h-8 px-3"
+                  >
+                    <Code className="w-4 h-4 mr-1" />
+                    源码
+                  </Button>
+                  <Button
+                    variant={viewMode === 'plain' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('plain')}
+                    className="h-8 px-3"
+                  >
+                    <Type className="w-4 h-4 mr-1" />
+                    纯文本
+                  </Button>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  创建于 {document.createTime}
+                </div>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-8">
-            <div className="prose prose-neutral dark:prose-invert max-w-none">
-              {document.content.split('\n').map((paragraph, index) => {
-                if (paragraph.startsWith('## ')) {
-                  return <h2 key={index} className="text-xl font-bold mt-8 mb-4">{paragraph.slice(3)}</h2>;
-                } else if (paragraph.startsWith('### ')) {
-                  return <h3 key={index} className="text-lg font-semibold mt-6 mb-3">{paragraph.slice(4)}</h3>;
-                } else if (paragraph.startsWith('#### ')) {
-                  return <h4 key={index} className="text-base font-semibold mt-4 mb-2">{paragraph.slice(5)}</h4>;
-                } else if (paragraph.startsWith('- ')) {
-                  return <li key={index} className="ml-4">{paragraph.slice(2)}</li>;
-                } else if (paragraph.startsWith('```')) {
-                  return null; // 简单处理，实际应用中可以添加代码高亮
-                } else if (paragraph.trim() === '') {
-                  return <br key={index} />;
-                } else {
-                  return <p key={index} className="mb-4 leading-relaxed">{paragraph}</p>;
-                }
-              })}
-            </div>
+            {viewMode === 'rich' && (
+              <div className="prose prose-neutral dark:prose-invert max-w-none">
+                {document.content.split('\n').map((paragraph, index) => {
+                  if (paragraph.startsWith('## ')) {
+                    return <h2 key={index} className="text-xl font-bold mt-8 mb-4">{paragraph.slice(3)}</h2>;
+                  } else if (paragraph.startsWith('### ')) {
+                    return <h3 key={index} className="text-lg font-semibold mt-6 mb-3">{paragraph.slice(4)}</h3>;
+                  } else if (paragraph.startsWith('#### ')) {
+                    return <h4 key={index} className="text-base font-semibold mt-4 mb-2">{paragraph.slice(5)}</h4>;
+                  } else if (paragraph.startsWith('- ')) {
+                    return <li key={index} className="ml-4">{paragraph.slice(2)}</li>;
+                  } else if (paragraph.startsWith('```')) {
+                    return null; // 简单处理，实际应用中可以添加代码高亮
+                  } else if (paragraph.trim() === '') {
+                    return <br key={index} />;
+                  } else {
+                    return <p key={index} className="mb-4 leading-relaxed">{paragraph}</p>;
+                  }
+                })}
+              </div>
+            )}
+            
+            {viewMode === 'markdown' && (
+              <div className="bg-muted/50 rounded-lg p-4">
+                <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed overflow-x-auto">
+                  <code>{document.content}</code>
+                </pre>
+              </div>
+            )}
+            
+            {viewMode === 'plain' && (
+              <div className="leading-relaxed">
+                {document.content.split('\n').map((line, index) => (
+                  <p key={index} className="mb-2">
+                    {line.replace(/^#+\s*/, '').replace(/^\-\s*/, '').replace(/\*\*(.*?)\*\*/g, '$1')}
+                  </p>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
