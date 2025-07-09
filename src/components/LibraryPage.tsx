@@ -211,16 +211,6 @@ export const LibraryPage = ({ documents, onPreview, onDelete, onExport }: Librar
                       {doc.updateTime}
                     </div>
                   </div>
-                  
-                  {doc.tags && doc.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {doc.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             ))}
