@@ -161,11 +161,7 @@ const DocumentPreview = () => {
                 <span className="text-2xl">{getTypeIcon(document.type)}</span>
                 <div>
                   <h1 className="text-xl font-bold text-foreground">{document.title}</h1>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      {document.creator}
-                    </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       更新于 {document.updateTime}
