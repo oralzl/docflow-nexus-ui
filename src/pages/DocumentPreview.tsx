@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, RefreshCw, ExternalLink, Trash2, Calendar, Copy, FileText, Code, Type, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, RefreshCw, ExternalLink, Trash2, Calendar, Copy, FileText, Code, Type, MoreHorizontal, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -27,6 +27,7 @@ const DocumentPreview = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [viewMode, setViewMode] = useState<'rich' | 'markdown' | 'plain'>('rich');
+  const [showOutline, setShowOutline] = useState(true);
 
   // Mock data - 在实际应用中这里会从API获取数据
   useEffect(() => {
@@ -134,6 +135,45 @@ const DocumentPreview = () => {
         description: "无法复制到剪贴板，请手动选择复制。",
         variant: "destructive",
       });
+    }
+  };
+
+  // 解析文档大纲
+  const outline = useMemo(() => {
+    if (!document || viewMode !== 'rich') return [];
+    
+    const lines = document.content.split('\n');
+    const headings: { id: string; text: string; level: number }[] = [];
+    
+    lines.forEach((line, index) => {
+      if (line.startsWith('## ')) {
+        headings.push({
+          id: `heading-${index}`,
+          text: line.slice(3).trim(),
+          level: 2
+        });
+      } else if (line.startsWith('### ')) {
+        headings.push({
+          id: `heading-${index}`,
+          text: line.slice(4).trim(),
+          level: 3
+        });
+      } else if (line.startsWith('#### ')) {
+        headings.push({
+          id: `heading-${index}`,
+          text: line.slice(5).trim(),
+          level: 4
+        });
+      }
+    });
+    
+    return headings;
+  }, [document, viewMode]);
+
+  const scrollToHeading = (headingId: string) => {
+    const element = globalThis.document?.getElementById(headingId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -299,16 +339,16 @@ const DocumentPreview = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="p-8 relative">
             {viewMode === 'rich' && (
               <div className="prose prose-neutral dark:prose-invert max-w-none">
                 {document.content.split('\n').map((paragraph, index) => {
                   if (paragraph.startsWith('## ')) {
-                    return <h2 key={index} className="text-xl font-bold mt-8 mb-4">{paragraph.slice(3)}</h2>;
+                    return <h2 key={index} id={`heading-${index}`} className="text-xl font-bold mt-8 mb-4">{paragraph.slice(3)}</h2>;
                   } else if (paragraph.startsWith('### ')) {
-                    return <h3 key={index} className="text-lg font-semibold mt-6 mb-3">{paragraph.slice(4)}</h3>;
+                    return <h3 key={index} id={`heading-${index}`} className="text-lg font-semibold mt-6 mb-3">{paragraph.slice(4)}</h3>;
                   } else if (paragraph.startsWith('#### ')) {
-                    return <h4 key={index} className="text-base font-semibold mt-4 mb-2">{paragraph.slice(5)}</h4>;
+                    return <h4 key={index} id={`heading-${index}`} className="text-base font-semibold mt-4 mb-2">{paragraph.slice(5)}</h4>;
                   } else if (paragraph.startsWith('- ')) {
                     return <li key={index} className="ml-4">{paragraph.slice(2)}</li>;
                   } else if (paragraph.startsWith('```')) {
@@ -338,6 +378,53 @@ const DocumentPreview = () => {
                   </p>
                 ))}
               </div>
+            )}
+
+            {/* 悬浮大纲目录 */}
+            {viewMode === 'rich' && outline.length > 0 && showOutline && (
+              <div className="fixed right-6 top-1/2 transform -translate-y-1/2 w-64 max-h-96 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg z-40">
+                <div className="flex items-center justify-between p-3 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <List className="w-4 h-4" />
+                    <span className="text-sm font-medium">大纲目录</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowOutline(false)}
+                    className="h-6 w-6 p-0"
+                  >
+                    ✕
+                  </Button>
+                </div>
+                <div className="max-h-80 overflow-y-auto p-2">
+                  {outline.map((heading) => (
+                    <button
+                      key={heading.id}
+                      onClick={() => scrollToHeading(heading.id)}
+                      className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-muted/50 transition-colors ${
+                        heading.level === 2 ? 'font-medium' : 
+                        heading.level === 3 ? 'ml-3 text-muted-foreground' : 
+                        'ml-6 text-muted-foreground text-xs'
+                      }`}
+                    >
+                      {heading.text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 显示大纲按钮 */}
+            {viewMode === 'rich' && outline.length > 0 && !showOutline && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowOutline(true)}
+                className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40"
+              >
+                <List className="w-4 h-4" />
+              </Button>
             )}
           </CardContent>
         </Card>
