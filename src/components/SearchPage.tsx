@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Search, Loader2, ExternalLink, Calendar, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -24,7 +23,6 @@ interface SearchPageProps {
 
 export const SearchPage = ({ onSearch, onPreview }: SearchPageProps) => {
   const [query, setQuery] = useState("");
-  const [searchType, setSearchType] = useState("all");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -36,7 +34,7 @@ export const SearchPage = ({ onSearch, onPreview }: SearchPageProps) => {
     setHasSearched(true);
     
     try {
-      const searchResults = await onSearch(query, searchType);
+      const searchResults = await onSearch(query, "wiki");
       setResults(searchResults);
     } catch (error) {
       console.error('Search error:', error);
@@ -75,8 +73,8 @@ export const SearchPage = ({ onSearch, onPreview }: SearchPageProps) => {
       <div className="max-w-4xl mx-auto">
         {/* Search Header */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground mb-2">在线文档搜索</h2>
-          <p className="text-muted-foreground">搜索您的飞书知识库和云空间文档</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">知识库文档搜索</h2>
+          <p className="text-muted-foreground">搜索您的飞书知识库文档</p>
         </div>
 
         {/* Search Controls */}
@@ -86,25 +84,13 @@ export const SearchPage = ({ onSearch, onPreview }: SearchPageProps) => {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="输入关键词搜索文档..."
+                  placeholder="输入关键词搜索知识库文档..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="pl-10 h-12 text-base"
                 />
               </div>
-              
-              <Select value={searchType} onValueChange={setSearchType}>
-                <SelectTrigger className="w-48 h-12">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部类型</SelectItem>
-                  <SelectItem value="wiki">知识库</SelectItem>
-                  <SelectItem value="doc">文档</SelectItem>
-                  <SelectItem value="sheet">表格</SelectItem>
-                </SelectContent>
-              </Select>
               
               <Button 
                 onClick={handleSearch}
@@ -117,7 +103,7 @@ export const SearchPage = ({ onSearch, onPreview }: SearchPageProps) => {
                 ) : (
                   <Search className="w-4 h-4 mr-2" />
                 )}
-                搜索
+                搜索知识库
               </Button>
             </div>
           </CardContent>
@@ -219,9 +205,9 @@ export const SearchPage = ({ onSearch, onPreview }: SearchPageProps) => {
                 <div className="w-16 h-16 mx-auto mb-4 bg-primary-soft rounded-full flex items-center justify-center">
                   <Search className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">开始搜索文档</h3>
+                <h3 className="text-lg font-medium mb-2">开始搜索知识库</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  输入关键词搜索您的飞书知识库、文档和表格。支持全文搜索，帮您快速找到所需内容。
+                  输入关键词搜索您的飞书知识库文档。支持全文搜索，帮您快速找到所需内容。
                 </p>
               </div>
             </CardContent>

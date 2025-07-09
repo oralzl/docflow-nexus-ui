@@ -12,9 +12,9 @@ export const Sidebar = ({ activeTab, onTabChange, documentCount, isTokenValid }:
   const menuItems = [
     {
       id: 'search' as const,
-      label: '在线文档搜索',
+      label: '知识库搜索',
       icon: Search,
-      description: '搜索飞书在线文档'
+      description: '搜索飞书知识库'
     },
     {
       id: 'library' as const,
